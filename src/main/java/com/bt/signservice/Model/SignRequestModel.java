@@ -1,9 +1,7 @@
 package com.bt.signservice.Model;
 
-import java.util.List;
-
 public class SignRequestModel {
-    private long idCertUserChoose;
+    private String certAlias;
 
     private String pathToFile;
 
@@ -19,12 +17,12 @@ public class SignRequestModel {
     private String location;
     private String reason;
 
-    public long getIdCertUserChoose() {
-        return idCertUserChoose;
+    public String getCertAlias() {
+        return certAlias;
     }
 
-    public void setIdCertUserChoose(long idCertUserChoose) {
-        this.idCertUserChoose = idCertUserChoose;
+    public void setCertAlias(String certAlias) {
+        this.certAlias = certAlias;
     }
 
     public String getPathToFile() {
@@ -91,8 +89,8 @@ public class SignRequestModel {
         this.reason = reason;
     }
 
-    public SignRequestModel(long idCertUserChoose, String pathToFile, String ext, String serverUploadEndpoint, String cookieStr, String token, String name, String location, String reason) {
-        this.idCertUserChoose = idCertUserChoose;
+    public SignRequestModel(String certAlias, String pathToFile, String ext, String serverUploadEndpoint, String cookieStr, String token, String name, String location, String reason) {
+        this.certAlias = certAlias;
         this.pathToFile = pathToFile;
         this.ext = ext;
         this.serverUploadEndpoint = serverUploadEndpoint;
@@ -101,5 +99,20 @@ public class SignRequestModel {
         this.name = name;
         this.location = location;
         this.reason = reason;
+    }
+
+    @Override
+    public String toString() {
+        return "SignRequestModel{" +
+                "certAlias='" + certAlias + '\'' +
+                ", pathToFile='" + pathToFile + '\'' +
+                ", ext='" + ext + '\'' +
+                ", serverUploadEndpoint='" + serverUploadEndpoint + '\'' +
+                ", cookieStr='" + cookieStr + '\'' +
+                ", token='" + token + '\'' +
+                ", name='" + name + '\'' +
+                ", location='" + location + '\'' +
+                ", reason='" + reason + '\'' +
+                '}';
     }
 }

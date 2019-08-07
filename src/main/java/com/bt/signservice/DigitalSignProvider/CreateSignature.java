@@ -6,11 +6,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.security.GeneralSecurityException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
+import java.security.*;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.util.Calendar;
 
@@ -36,18 +33,23 @@ public class CreateSignature extends CreateSignatureBase
     /**
      * Initialize the signature creator with a keystore and certficate password.
      *
-     * @param keystore the pkcs12 keystore containing the signing certificate
-     * @param pin the password for recovering the key
+     * @param certificateChain is the certificate of alias want ti sign document.
+     * @param privateKey is the private key of that cert
      * @throws KeyStoreException if the keystore has not been initialized (loaded)
      * @throws NoSuchAlgorithmException if the algorithm for recovering the key cannot be found
      * @throws UnrecoverableKeyException if the given password is wrong
      * @throws CertificateException if the certificate is not valid as signing time
      * @throws IOException if no certificate could be found
      */
-    public CreateSignature(KeyStore keystore, char[] pin)
+//    public CreateSignature(Certificate inputCert, Certificate[] inputCertChain) throws CertificateException, IOException
+//    {
+//        super(inputCert, inputCertChain);
+//    }
+
+    public CreateSignature(KeyStore keystore, String alias)
             throws KeyStoreException, UnrecoverableKeyException, NoSuchAlgorithmException, CertificateException, IOException
     {
-        super(keystore, pin);
+        super(keystore, alias);
     }
 
     /**
@@ -95,8 +97,7 @@ public class CreateSignature extends CreateSignatureBase
         }
     }
 
-    public void signDetached(PDDocument document, OutputStream output, String name, String location, String reason)
-            throws IOException
+    public void signDetached(PDDocument document, OutputStream output, String name, String location, String reason) throws IOException
     {
         int accessPermissions = SigUtils.getMDPPermission(document);
         if (accessPermissions == 1)
@@ -125,8 +126,7 @@ public class CreateSignature extends CreateSignatureBase
         if (isExternalSigning())
         {
             document.addSignature(signature);
-            ExternalSigningSupport externalSigning =
-                    document.saveIncrementalForExternalSigning(output);
+            ExternalSigningSupport externalSigning = document.saveIncrementalForExternalSigning(output);
             // invoke external signature service
             byte[] cmsSignature = sign(externalSigning.getContent());
             // set signature bytes received from the service

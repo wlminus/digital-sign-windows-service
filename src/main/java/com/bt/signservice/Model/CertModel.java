@@ -6,12 +6,21 @@ import java.util.Date;
 public class CertModel {
     private long id;
     private boolean valid;
+    private String alias;
     private X500Principal issuer;
     private X500Principal subject;
     private String algName;
     private String algOID;
     private int version;
     private Date notAfter;
+
+    public String getAlias() {
+        return alias;
+    }
+
+    public void setAlias(String alias) {
+        this.alias = alias;
+    }
 
     public long getId() {
         return id;
@@ -80,9 +89,10 @@ public class CertModel {
     public CertModel() {
     }
 
-    public CertModel(long id, boolean valid, X500Principal issuer, X500Principal subject, String algName, String algOID, int version, Date notAfter) {
+    public CertModel(long id, boolean valid, String alias, X500Principal issuer, X500Principal subject, String algName, String algOID, int version, Date notAfter) {
         this.id = id;
         this.valid = valid;
+        this.alias = alias;
         this.issuer = issuer;
         this.subject = subject;
         this.algName = algName;
@@ -96,6 +106,7 @@ public class CertModel {
         return "CertModel{" +
                 "id=" + id +
                 ", valid=" + valid +
+                ", alias='" + alias + '\'' +
                 ", issuer=" + issuer +
                 ", subject=" + subject +
                 ", algName='" + algName + '\'' +

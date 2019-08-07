@@ -41,36 +41,49 @@ public class SignController {
         }
     }
 
+    /**
+     * Request for signing pdf document
+     * @param signRequest {
+     *     String certAlias: Alias user choose
+     *     String pathToFile: Path to file need to sign
+     *     String ext: must be pdf
+     *     String serverUploadEndpoint: endpoint of upload server to push file to server
+     *     String cookieStr: Cookie string of request push file
+     *     String token: Token of request push file
+     *     String name: information of signature
+     *     String location: information of signature
+     *     String reason: information of signature
+     * }
+     * @return SignResponseModel
+     */
     @RequestMapping(value = "/sign", method = RequestMethod.POST)
-    public ResponseEntity<SignResponseModel> signRequest(@RequestBody SignRequestModel signRequest) {
+    public ResponseEntity<String> signRequest(@RequestBody SignRequestModel signRequest) {
         try {
-            return ResponseEntity.ok(BTCertProvider.signSinglePdfDocument(signRequest));
+            System.out.println("Request to sign document");
+            String pathToSignedFile = BTCertProvider.signSinglePdfDocument(signRequest);
+            System.out.println("Sign done");
+
+            String response = BTCertProvider.sendSignedFileToServer(pathToSignedFile, signRequest.getServerUploadEndpoint());
+            return ResponseEntity.ok(response);
         } catch (CertificateException certExc) {
-
-        } catch (UnrecoverableKeyException unrecoverExc) {
-
+            throw new BadRequestAlertException("Lỗi Certificate", certExc.getMessage(), "");
         } catch (NoSuchAlgorithmException noAlgExc) {
-
+            throw new BadRequestAlertException("Lỗi không có thuật toán", noAlgExc.getMessage(), "");
         } catch (IOException ioExc) {
-
+            throw new BadRequestAlertException("Lỗi vào ra", ioExc.getMessage(), "");
         } catch (KeyStoreException keyStoreExc) {
-
+            throw new BadRequestAlertException("Lỗi keystore", keyStoreExc.getMessage(), "");
         } catch (NoSuchProviderException noProviderExc) {
-
+            throw new BadRequestAlertException("Lỗi không có keystore", noProviderExc.getMessage(), "");
         } catch (Exception ex) {
-
+            throw new BadRequestAlertException("Lỗi không xác định", ex.getMessage(), "");
         }
-
     }
 
-    @RequestMapping(value = "/test", method = RequestMethod.GET)
-    public ResponseEntity<String> test() throws CertificateException, UnrecoverableKeyException, NoSuchAlgorithmException, IOException, KeyStoreException, NoSuchProviderException {
-        BTCertProvider.signSinglePdfDocument("Công ty BT", "Hà Nội", "Testing service");
-        return ResponseEntity.ok("Done");
-    }
-
-    @RequestMapping(value = "/err", method = RequestMethod.GET)
-    public ResponseEntity<List<CertModel>> errTest() {
-        throw new BadRequestAlertException("File name out of range", "ENTITY_NAME", "file-name-too-long");
-    }
+//    @RequestMapping(value = "/test", method = RequestMethod.GET)
+//    public ResponseEntity<String> test() throws CertificateException, UnrecoverableKeyException, NoSuchAlgorithmException, IOException, KeyStoreException, NoSuchProviderException {
+////        SignRequestModel signRequestModel = new SignRequestModel()
+//        BTCertProvider.signSinglePdfDocumentTest("Công ty BT", "Hà Nội", "Testing service");
+//        return ResponseEntity.ok("Done");
+//    }
 }
