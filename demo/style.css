@@ -1,0 +1,7 @@
+.cert-item {
+	cursor: pointer;
+}
+
+.cert-item:hover {
+	background-color: #428bca;
+}

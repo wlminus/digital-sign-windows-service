@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title></title>
+	
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+	
+
+	<script
+  src="https://code.jquery.com/jquery-3.4.1.js"
+  integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU="
+  crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+</head>
+<body>
+	<div class="text-center mt-5">
+		<h2 class="text-primary">Digital Signing service</h2>
+		<div id="animation" class="mt-5" style="margin: 0 auto; width: 50px; height: 50px; background-repeat: no-repeat; background-size: 50px 50px;">
+			
+		</div>
+		<div id="list">
+			
+		</div>
+		<div id="rel">
+			
+		</div>
+		<form action="" method="POST" accept-charset="utf-8" class="mt-5 mb-5">
+			File: <input type="file" id="fileControl">
+			<!-- <button type="submit" class="btn btn-primary">Send</button> -->
+		</form>
+		
+		<div>
+			<button class="d-inline-block btn btn-primary" id="btnLoadCert" class="btn btn-primary">Load Cert</button>
+			<button class="d-inline-block btn btn-primary" id="btnSign" class="btn btn-primary">Sign</button>
+		</div>
+		
+			
+		</div>
+	</div>
+	<script>
+// 		[
+//      {
+//         "id": 0,
+//         "valid": true,
+//         "alias": "CÔNG TY TNHH GI?I PHÁP CÔNG NGH? B&T VI?T NAM",
+//         "issuer": {
+//             "name": "CN=SmartSign,O=Cong ty co phan chu ky so VI NA,C=VN",
+//             "encoded": "MEsxCzAJBgNVBAYTAlZOMSgwJgYDVQQKEx9Db25nIHR5IGNvIHBoYW4gY2h1IGt5IHNvIFZJIE5BMRIwEAYDVQQDEwlTbWFydFNpZ24="
+//         },
+//         "subject": {
+//             "name": "C=VN,ST=HÀ NỘI,L=Ba Đình,CN=CÔNG TY TNHH GIẢI PHÁP CÔNG NGHỆ B&T VIỆT NAM,UID=MST:0106438347",
+//             "encoded": "MIGWMR4wHAYKCZImiZPyLGQBAQwOTVNUOjAxMDY0MzgzNDcxPzA9BgNVBAMMNkPDlE5HIFRZIFROSEggR0nhuqJJIFBIw4FQIEPDlE5HIE5HSOG7hiBCJlQgVknhu4ZUIE5BTTESMBAGA1UEBwwJQmEgxJDDrG5oMRIwEAYDVQQIDAlIw4AgTuG7mEkxCzAJBgNVBAYTAlZO"
+//         },
+//         "algName": "SHA1withRSA",
+//         "algOID": "1.2.840.113549.1.1.5",
+//         "version": 3,
+//         "notAfter": "2021-07-17T04:01:28.000+0000"
+//      }
+// 		]
+
+		var CHOOSED_CERT = '';
+
+		$("#btnLoadCert").click(function(event){
+			$("#rel").text('');
+			$('#animation').css('background-image', 'url(load.gif)');
+			$(event.target).prop('disabled', true);
+
+			
+
+
+		    jQuery.ajax({
+			    url: 'http://localhost:58456/cert',
+			    method: 'GET',
+			    type: 'GET',	   
+			    success: function(data){
+			        // console.log(data);
+			        // console.log(data.length);
+			        // console.log(typeof(data));
+			        // console.log(data[0].subject);
+
+			        for (let i=0;i<data.length;i++) {
+			        	$("#list").html('<div class="cert-item" value="' + data[i].alias + '"">' + data[i].subject.name + '</div>');
+			        }
+
+			        $('#animation').css('background-image', 'none');
+			        $(event.target).prop('disabled', false);      
+			    }
+			});
+
+		});		
+
+		$(document).ready(function() {
+		    $('body').on('click', '.cert-item', function(event) {
+			    $(event.target).css('background-color', '#428bca');
+			    CHOOSED_CERT = $(event.target).attr('value');
+			    console.log(CHOOSED_CERT);
+			});
+		});
+		
+		$("#btnSign").click(function(event){
+			$("#rel").text('');
+			
+			// if (CHOOSED_CERT === '') {
+			// 	$("#rel").text('Không có Cert');
+			// }
+
+			// var myFile = $('#fileControl').files;
+			
+
+			var myFile = $('#fileControl')[0].files[0];
+			console.log(myFile);
+		 //    var data = new FormData();
+			// data.append('uploadFile', myFile);
+			// .change(function () {
+			//     console.log(this.files[0].mozFullPath);
+			// });
+		    if(!myFile) {
+		        $("#rel").text('Không có file');
+		    } else {
+		    	alert($('input[type=file]#fileControl').val())
+		    }
+		});
+
+		$('input[type=file]#fileControl').change( function(event) {
+			var tmppath = URL.createObjectURL(event.target.files[0]);
+		    alert(tmppath);      
+		});
+
+		// // $.ajax({url: "https://localhost:44357/api/values", cache: false, success: function(html){
+		// // 	$("#results").append(html);
+		// // 	}
+		// // });
+		// console.log("hello");
+		// $.ajax({
+		//     url: 'https://localhost:44357/api/values',
+		//     type: "GET",
+		//     dataType: "jsonp",
+		//     success: function (data) {
+		//     	console.log("hello 2");
+		//         console.log(data);
+		//     }
+		// });
+		// console.log("hello 3");
+
+		// $("button").click(function(){
+		//   $.getJSON("https://localhost:44357/api/values", function(result){
+		//   	console.log(result);
+		//     // $.each(result, function(i, field){
+		//     //   $("div").append(field + " ");
+		//     // });
+		//   });
+		// });
+		
+		// $("#btnSend").click(function(){
+		// 	$('#animation').css('background-image', 'url(load.gif)');
+
+		// 	var myFile = $('#fileControl')[0].files[0];
+		//     var data = new FormData();
+		// 	data.append('uploadFile', myFile);
+
+
+		//     jQuery.ajax({
+		// 	    url: 'http://localhost:8896/upload',
+		// 	    method: 'POST',
+		// 	    type: 'POST',
+		// 	    data: data,
+		//         enctype: 'multipart/form-data',
+		// 	    processData: false,	   
+		// 	    success: function(data){
+		// 	        alert(data);
+		// 	    }
+		// 	});
+
+		// });		
+
+		// upload = (inputFile) => {
+		//     // Form data
+		//     data: new FormData();
+		//     var data = new FormData();
+		// 	data.append('file', inputFile);
+
+
+		//     jQuery.ajax({
+		// 	    url: 'php/upload.php',
+		// 	    data: data,
+		// 	    cache: false,
+		// 	    contentType: false,
+		// 	    processData: false,
+		// 	    method: 'POST',
+		// 	    type: 'POST', // For jQuery < 1.9
+		// 	    success: function(data){
+		// 	        alert(data);
+		// 	    }
+		// 	});
+		// }
+	</script>
+</body>
+</html>

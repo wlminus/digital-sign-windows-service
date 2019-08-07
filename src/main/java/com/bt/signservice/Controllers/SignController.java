@@ -7,10 +7,7 @@ import com.bt.signservice.Model.SignRequestModel;
 import com.bt.signservice.Model.SignResponseModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.security.KeyStoreException;
@@ -22,6 +19,8 @@ import java.util.List;
 
 @RestController
 public class SignController {
+
+    @CrossOrigin(origins = "*", allowedHeaders = "*")
     @RequestMapping(value = "/cert", method = RequestMethod.GET)
     public ResponseEntity<List<CertModel>> getCert() {
         try {
@@ -56,6 +55,7 @@ public class SignController {
      * }
      * @return SignResponseModel
      */
+    @CrossOrigin(origins = "*", allowedHeaders = "*")
     @RequestMapping(value = "/sign", method = RequestMethod.POST)
     public ResponseEntity<String> signRequest(@RequestBody SignRequestModel signRequest) {
         try {
