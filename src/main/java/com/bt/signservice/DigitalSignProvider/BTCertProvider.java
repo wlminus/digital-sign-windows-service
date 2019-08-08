@@ -17,6 +17,10 @@ import org.bouncycastle.asn1.cmp.CertResponse;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
@@ -27,6 +31,7 @@ import java.util.Date;
 import java.util.List;
 
 public class BTCertProvider {
+    private final static String rootPath = System.getProperty("user.dir") + "/sign";
     public static List<CertModel> getCertList() throws NoSuchProviderException, KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException {
         KeyStore keyStore = KeyStore.getInstance("Windows-MY", "SunMSCAPI");
         keyStore.load(null);
@@ -70,8 +75,14 @@ public class BTCertProvider {
 //        signing.signDetached(inFile, outFile, null, name, location, reason);
 //        return true;
 //    }
+//System.getProperty("user.dir")
 
     public static String signSinglePdfDocument(SignRequestModel signRequest) throws CertificateException, NoSuchAlgorithmException, IOException, NoSuchProviderException, KeyStoreException, UnrecoverableKeyException {
+        Path filepath = Paths.get(rootPath + "/" + signRequest.getFileName());
+        OutputStream os = Files.newOutputStream(filepath);
+        os.write(signRequest.getInputFile().getBytes());
+        os.close();
+
         KeyStore keyStore = KeyStore.getInstance("Windows-MY", "SunMSCAPI");
         keyStore.load(null);
 
@@ -79,17 +90,16 @@ public class BTCertProvider {
         String tsaUrl = null;
 
         /// Need edit
-        CreateSignature signing = new CreateSignature(keyStore, signRequest.getCertAlias());
+        CreateSignature signing = new CreateSignature(keyStore, signRequest.getSelectedCertAlias());
         // sign PDF
         signing.setExternalSigning(externalSig);
-        File inFile = new File(signRequest.getPathToFile());
+        File inFile = new File(rootPath, signRequest.getFileName());
         String fileName = inFile.getName();
         String substring = fileName.substring(0, fileName.lastIndexOf('.'));
         File outFile = new File(inFile.getParent(), substring + "_signed.pdf");
         signing.signDetached(inFile, outFile, tsaUrl, signRequest.getName(), signRequest.getLocation(), signRequest.getReason());
 
-        String singedPath = signRequest.getPathToFile().substring(0, signRequest.getPathToFile().lastIndexOf('.')) + "_signed.pdf";
-        return singedPath;
+        return rootPath + substring + "_signed.pdf";
     }
 
     public static String sendSignedFileToServer(String pathToSignedFile, String serverUrl) throws IOException {

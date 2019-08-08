@@ -1,36 +1,49 @@
 package com.bt.signservice.Model;
 
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.Map;
+
 public class SignRequestModel {
-    private String certAlias;
+    private CertModel selectedCert;
+    private String selectedCertAlias;
 
-    private String pathToFile;
-
+    private MultipartFile inputFile;
+    private String fileName;
     private String ext;
 
+    private boolean isUpload;
     private String serverUploadEndpoint;
 
     private String cookieStr;
-
-    private String token;
+    private Map<String, String> token;
 
     private String name;
     private String location;
     private String reason;
 
-    public String getCertAlias() {
-        return certAlias;
+    public CertModel getSelectedCert() {
+        return selectedCert;
     }
 
-    public void setCertAlias(String certAlias) {
-        this.certAlias = certAlias;
+    public void setSelectedCert(CertModel selectedCert) {
+        this.selectedCert = selectedCert;
     }
 
-    public String getPathToFile() {
-        return pathToFile;
+    public String getSelectedCertAlias() {
+        return selectedCertAlias;
     }
 
-    public void setPathToFile(String pathToFile) {
-        this.pathToFile = pathToFile;
+    public void setSelectedCertAlias(String selectedCertAlias) {
+        this.selectedCertAlias = selectedCertAlias;
+    }
+
+    public MultipartFile getInputFile() {
+        return inputFile;
+    }
+
+    public void setInputFile(MultipartFile inputFile) {
+        this.inputFile = inputFile;
     }
 
     public String getExt() {
@@ -57,11 +70,11 @@ public class SignRequestModel {
         this.cookieStr = cookieStr;
     }
 
-    public String getToken() {
+    public Map<String, String> getToken() {
         return token;
     }
 
-    public void setToken(String token) {
+    public void setToken(Map<String, String> token) {
         this.token = token;
     }
 
@@ -89,10 +102,32 @@ public class SignRequestModel {
         this.reason = reason;
     }
 
-    public SignRequestModel(String certAlias, String pathToFile, String ext, String serverUploadEndpoint, String cookieStr, String token, String name, String location, String reason) {
-        this.certAlias = certAlias;
-        this.pathToFile = pathToFile;
+    public boolean isUpload() {
+        return isUpload;
+    }
+
+    public void setUpload(boolean upload) {
+        isUpload = upload;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+
+    public SignRequestModel() {
+    }
+
+    public SignRequestModel(CertModel selectedCert, String selectedCertAlias, MultipartFile inputFile, String fileName, String ext, boolean isUpload, String serverUploadEndpoint, String cookieStr, Map<String, String> token, String name, String location, String reason) {
+        this.selectedCert = selectedCert;
+        this.selectedCertAlias = selectedCertAlias;
+        this.inputFile = inputFile;
+        this.fileName = fileName;
         this.ext = ext;
+        this.isUpload = isUpload;
         this.serverUploadEndpoint = serverUploadEndpoint;
         this.cookieStr = cookieStr;
         this.token = token;
@@ -104,12 +139,15 @@ public class SignRequestModel {
     @Override
     public String toString() {
         return "SignRequestModel{" +
-                "certAlias='" + certAlias + '\'' +
-                ", pathToFile='" + pathToFile + '\'' +
+                "selectedCert=" + selectedCert +
+                ", selectedCertAlias='" + selectedCertAlias + '\'' +
+                ", inputFile=" + inputFile +
+                ", fileName='" + fileName + '\'' +
                 ", ext='" + ext + '\'' +
+                ", isUpload=" + isUpload +
                 ", serverUploadEndpoint='" + serverUploadEndpoint + '\'' +
                 ", cookieStr='" + cookieStr + '\'' +
-                ", token='" + token + '\'' +
+                ", token=" + token +
                 ", name='" + name + '\'' +
                 ", location='" + location + '\'' +
                 ", reason='" + reason + '\'' +

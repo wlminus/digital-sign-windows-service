@@ -5,6 +5,7 @@ import com.bt.signservice.DigitalSignProvider.BTCertProvider;
 import com.bt.signservice.Model.CertModel;
 import com.bt.signservice.Model.SignRequestModel;
 import com.bt.signservice.Model.SignResponseModel;
+import com.bt.signservice.service.LogService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,11 +16,25 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 @RestController
 public class SignController {
-
+    /**
+     * Request to load available certificate of computer
+     * @return List<CertModel>
+     *     long id: id of cert service named when init request
+     *     boolean valid: flag check is certificate valid at the time init request
+     *     String alias: alias of that cert
+     *     X500Principal issuer: info of issuer - for optional use
+     *     X500Principal subject: info of subject - for optional use
+     *     String algName: algorithm use in cert
+     *     String algOID: algorithm id use in cert
+     *     int version: version of cert
+     *     Date notAfter: day valid of cert
+     */
     @CrossOrigin(origins = "*", allowedHeaders = "*")
     @RequestMapping(value = "/cert", method = RequestMethod.GET)
     public ResponseEntity<List<CertModel>> getCert() {
@@ -43,15 +58,17 @@ public class SignController {
     /**
      * Request for signing pdf document
      * @param signRequest {
-     *     String certAlias: Alias user choose
-     *     String pathToFile: Path to file need to sign
-     *     String ext: must be pdf
-     *     String serverUploadEndpoint: endpoint of upload server to push file to server
-     *     String cookieStr: Cookie string of request push file
-     *     String token: Token of request push file
-     *     String name: information of signature
-     *     String location: information of signature
-     *     String reason: information of signature
+     *     CertModel selectedCert: select cert of user
+     *     String selectedCertAlias: alias of that cert
+     *     MultipartFile inputFile: input file to sign send by client
+     *     String ext: extension of file (must be pdf at this time)
+     *     boolean isUpload: flag is file gonna push to remote server
+     *     String serverUploadEndpoint: endpoint of server file will be uploaded, care when isUpload = true
+     *     String cookieStr: (optional) cookie string of request send file to server
+     *     Map<String, String> token: (optional) token of request send file to server
+     *     String name: info will be sign to document
+     *     String location: info will be sign to document
+     *     String reason: info will be sign to document
      * }
      * @return SignResponseModel
      */
@@ -59,12 +76,24 @@ public class SignController {
     @RequestMapping(value = "/sign", method = RequestMethod.POST)
     public ResponseEntity<String> signRequest(@RequestBody SignRequestModel signRequest) {
         try {
-            System.out.println("Request to sign document");
-            String pathToSignedFile = BTCertProvider.signSinglePdfDocument(signRequest);
-            System.out.println("Sign done");
+            LogService ls = new LogService();
+            SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+            Date date = new Date();
 
-            String response = BTCertProvider.sendSignedFileToServer(pathToSignedFile, signRequest.getServerUploadEndpoint());
-            return ResponseEntity.ok(response);
+            ls.WriteLogToFile(formatter.format(date) + "Start request sign of" + signRequest.getSelectedCertAlias() + "\n");
+            String pathToSignedFile = BTCertProvider.signSinglePdfDocument(signRequest);
+
+            ls.WriteLogToFile(formatter.format(date) + "Sign done, path to file" + pathToSignedFile + "\n");
+            if (signRequest.isUpload()) {
+                ls.WriteLogToFile(formatter.format(date) + "Start send server url " + signRequest.getServerUploadEndpoint() + "\n");
+                String response = BTCertProvider.sendSignedFileToServer(pathToSignedFile, signRequest.getServerUploadEndpoint());
+
+                ls.WriteLogToFile(formatter.format(date) + "Send server done"+ "\n");
+                return ResponseEntity.ok(response);
+            } else {
+                return ResponseEntity.ok("Đã kí vào file");
+            }
+
         } catch (CertificateException certExc) {
             throw new BadRequestAlertException("Lỗi Certificate", certExc.getMessage(), "");
         } catch (NoSuchAlgorithmException noAlgExc) {
@@ -72,7 +101,7 @@ public class SignController {
         } catch (IOException ioExc) {
             throw new BadRequestAlertException("Lỗi vào ra", ioExc.getMessage(), "");
         } catch (KeyStoreException keyStoreExc) {
-            throw new BadRequestAlertException("Lỗi keystore", keyStoreExc.getMessage(), "");
+            throw new BadRequestAlertException("Không tải được keystore", keyStoreExc.getMessage(), "");
         } catch (NoSuchProviderException noProviderExc) {
             throw new BadRequestAlertException("Lỗi không có keystore", noProviderExc.getMessage(), "");
         } catch (Exception ex) {

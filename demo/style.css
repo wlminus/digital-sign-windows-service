@@ -1,7 +1,90 @@
-.cert-item {
-	cursor: pointer;
+body {
+	text-align: center;
 }
 
-.cert-item:hover {
+.text-primary {
+	font-size: 26px;
+	color: #428bca;
+	text-transform: uppercase;
+	margin-top: 50px;
+}
+
+
+
+
+
+
+/*=========================================*/
+#ds-animation {
+	margin: 0 auto; 
+	width: 50px; 
+	height: 50px; 
+	background-repeat: 
+	no-repeat; 
+	background-size: 50px 50px;
+}
+
+#ds-info-control {
+	margin-top: 20px;
+	margin-bottom: 20px;
+}
+
+#ds-cmd-control {
+	margin-top: 20px;
+	margin-bottom: 20px;
+}
+
+#ds-cmd-control .ds-btn {
+	padding: 10px;
 	background-color: #428bca;
+	border: 0.2px solid #000;
+	color: #fff;
+	text-transform: uppercase;
+	font-size: 14px;
+	border-radius: 4px;
+	margin-left: 10px;
+	margin-right: 10px;
+	font-weight: 300;
+}
+#ds-cmd-control .ds-btn:disabled {
+	border: 1px solid #999999;
+    background-color: #cccccc;
+    color: #666666;
+}
+
+
+#ds-info-control .ds-input-box {
+	max-width: 300px;
+	min-width: 280px;
+	margin: 0 auto;
+	margin-top: 15px;
+	margin-bottom: 15px;
+}
+#ds-info-control .ds-input-box .ds-input-label {
+	text-align: left;
+}
+#ds-info-control .ds-input-box input {
+	padding: 5px;
+	width: 100%;
+}
+
+
+#ds-form {
+	margin-top: 30px;
+	margin-bottom: 30px;
+}
+
+
+.ds-cert-item {
+	cursor: pointer;
+}
+.ds-cert-item:hover {
+	background-color: #dadee3;
+}
+
+.background-blue {
+	background-color: #428bca;
+}
+.display-none {
+	display: none;
 }
