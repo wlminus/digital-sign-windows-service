@@ -1,0 +1,32 @@
+09/08/2019 10:46:35Start request sign ofnull
+09/08/2019 10:46:38Start request sign ofnull
+09/08/2019 10:47:47Start request sign ofnull
+09/08/2019 14:22:26Start request sign ofCÔNG TY TNHH GI?I PHÁP CÔNG NGH? B&T VI?T NAM
+09/08/2019 14:32:01Start request sign ofCÔNG TY TNHH GI?I PHÁP CÔNG NGH? B&T VI?T NAM
+09/08/2019 14:35:07Start request sign ofCÔNG TY TNHH GI?I PHÁP CÔNG NGH? B&T VI?T NAM
+09/08/2019 14:35:07Sign done, path to fileD:\wlminus\Stuff\btsign/signdump_signed.pdf
+09/08/2019 14:40:20Start request sign ofCÔNG TY TNHH GI?I PHÁP CÔNG NGH? B&T VI?T NAM
+09/08/2019 14:40:20Sign done, path to fileD:\wlminus\Stuff\btsign/signdump_signed.pdf
+09/08/2019 14:42:38Start request sign ofCÔNG TY TNHH GI?I PHÁP CÔNG NGH? B&T VI?T NAM
+09/08/2019 14:43:21Start request sign ofCÔNG TY TNHH GI?I PHÁP CÔNG NGH? B&T VI?T NAM
+09/08/2019 14:43:48Start request sign ofCÔNG TY TNHH GI?I PHÁP CÔNG NGH? B&T VI?T NAM
+09/08/2019 15:21:26Start request sign ofCÔNG TY TNHH GI?I PHÁP CÔNG NGH? B&T VI?T NAM
+09/08/2019 15:23:14Start request sign ofCÔNG TY TNHH GI?I PHÁP CÔNG NGH? B&T VI?T NAM
+09/08/2019 15:27:16Start request sign ofCÔNG TY TNHH GI?I PHÁP CÔNG NGH? B&T VI?T NAM
+09/08/2019 15:28:45Start request sign ofCÔNG TY TNHH GI?I PHÁP CÔNG NGH? B&T VI?T NAM
+09/08/2019 15:28:45Sign done, path to fileD:\wlminus\Stuff\btsign/signdump_signed.pdf
+09/08/2019 15:30:57Start request sign ofCÔNG TY TNHH GI?I PHÁP CÔNG NGH? B&T VI?T NAM
+09/08/2019 15:30:57Sign done, path to fileD:\wlminus\Stuff\btsign/signdump_signed.pdf
+09/08/2019 15:32:03Start request sign ofCÔNG TY TNHH GI?I PHÁP CÔNG NGH? B&T VI?T NAM
+09/08/2019 15:32:03Sign done, path to fileD:\wlminus\Stuff\btsign/signdump_signed.pdf
+09/08/2019 15:32:38Start request sign ofCÔNG TY TNHH GI?I PHÁP CÔNG NGH? B&T VI?T NAM
+09/08/2019 15:32:38Sign done, path to fileD:\wlminus\Stuff\btsign/signdump_signed.pdf
+09/08/2019 15:33:46Start request sign ofCÔNG TY TNHH GI?I PHÁP CÔNG NGH? B&T VI?T NAM
+09/08/2019 15:33:46Sign done, path to fileD:\wlminus\Stuff\btsign/signdump_signed.pdf
+09/08/2019 15:35:36Start request sign ofCÔNG TY TNHH GI?I PHÁP CÔNG NGH? B&T VI?T NAM
+09/08/2019 15:35:36Sign done, path to fileD:\wlminus\Stuff\btsign/signdump_signed.pdf
+09/08/2019 15:35:36Start send server url http://localhost:8896/upload
+09/08/2019 15:37:29Start request sign ofCÔNG TY TNHH GI?I PHÁP CÔNG NGH? B&T VI?T NAM
+09/08/2019 15:37:29Sign done, path to fileD:\wlminus\Stuff\btsign/sign/dump_signed.pdf
+09/08/2019 15:37:29Start send server url http://localhost:8896/upload
+09/08/2019 15:37:29Send server done

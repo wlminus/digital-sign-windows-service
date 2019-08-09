@@ -1,17 +1,19 @@
 package com.bt.signservice.Model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
 
 public class SignRequestModel {
-    private CertModel selectedCert;
+//    private CertModel selectedCert;
     private String selectedCertAlias;
 
-    private MultipartFile inputFile;
+    private String inputFile;
     private String fileName;
     private String ext;
 
+    @JsonProperty
     private boolean isUpload;
     private String serverUploadEndpoint;
 
@@ -22,13 +24,13 @@ public class SignRequestModel {
     private String location;
     private String reason;
 
-    public CertModel getSelectedCert() {
-        return selectedCert;
-    }
-
-    public void setSelectedCert(CertModel selectedCert) {
-        this.selectedCert = selectedCert;
-    }
+//    public CertModel getSelectedCert() {
+//        return selectedCert;
+//    }
+//
+//    public void setSelectedCert(CertModel selectedCert) {
+//        this.selectedCert = selectedCert;
+//    }
 
     public String getSelectedCertAlias() {
         return selectedCertAlias;
@@ -38,11 +40,11 @@ public class SignRequestModel {
         this.selectedCertAlias = selectedCertAlias;
     }
 
-    public MultipartFile getInputFile() {
+    public String getInputFile() {
         return inputFile;
     }
 
-    public void setInputFile(MultipartFile inputFile) {
+    public void setInputFile(String inputFile) {
         this.inputFile = inputFile;
     }
 
@@ -121,8 +123,8 @@ public class SignRequestModel {
     public SignRequestModel() {
     }
 
-    public SignRequestModel(CertModel selectedCert, String selectedCertAlias, MultipartFile inputFile, String fileName, String ext, boolean isUpload, String serverUploadEndpoint, String cookieStr, Map<String, String> token, String name, String location, String reason) {
-        this.selectedCert = selectedCert;
+    public SignRequestModel(String selectedCertAlias, String inputFile, String fileName, String ext, boolean isUpload, String serverUploadEndpoint, String cookieStr, Map<String, String> token, String name, String location, String reason) {
+//        this.selectedCert = selectedCert;
         this.selectedCertAlias = selectedCertAlias;
         this.inputFile = inputFile;
         this.fileName = fileName;
@@ -139,7 +141,7 @@ public class SignRequestModel {
     @Override
     public String toString() {
         return "SignRequestModel{" +
-                "selectedCert=" + selectedCert +
+//                "selectedCert=" + selectedCert +
                 ", selectedCertAlias='" + selectedCertAlias + '\'' +
                 ", inputFile=" + inputFile +
                 ", fileName='" + fileName + '\'' +

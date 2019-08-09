@@ -61,6 +61,7 @@ public class SignController {
      *     CertModel selectedCert: select cert of user
      *     String selectedCertAlias: alias of that cert
      *     MultipartFile inputFile: input file to sign send by client
+     *     String fileName: Name of file
      *     String ext: extension of file (must be pdf at this time)
      *     boolean isUpload: flag is file gonna push to remote server
      *     String serverUploadEndpoint: endpoint of server file will be uploaded, care when isUpload = true
@@ -110,9 +111,9 @@ public class SignController {
     }
 
 //    @RequestMapping(value = "/test", method = RequestMethod.GET)
-//    public ResponseEntity<String> test() throws CertificateException, UnrecoverableKeyException, NoSuchAlgorithmException, IOException, KeyStoreException, NoSuchProviderException {
-////        SignRequestModel signRequestModel = new SignRequestModel()
-//        BTCertProvider.signSinglePdfDocumentTest("Công ty BT", "Hà Nội", "Testing service");
+//    public ResponseEntity<String> test() throws IOException {
+//        BTCertProvider.sendSignedFileToServer("D:\\wlminus\\Stuff\\TestSign\\javadoc_signed.pdf", "http://localhost:8896/upload");
+//
 //        return ResponseEntity.ok("Done");
 //    }
 }

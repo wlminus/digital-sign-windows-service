@@ -1,6 +1,7 @@
 package com.bt.signservice.DigitalSignProvider;
 
 import com.bt.signservice.Model.CertModel;
+import com.bt.signservice.Model.Constant;
 import com.bt.signservice.Model.SignRequestModel;
 import com.bt.signservice.Model.SignResponseModel;
 import org.apache.http.HttpEntity;
@@ -8,10 +9,12 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
+import org.apache.http.entity.FileEntity;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.bouncycastle.asn1.cmp.CertResponse;
 
@@ -25,13 +28,9 @@ import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 public class BTCertProvider {
-    private final static String rootPath = System.getProperty("user.dir") + "/sign";
     public static List<CertModel> getCertList() throws NoSuchProviderException, KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException {
         KeyStore keyStore = KeyStore.getInstance("Windows-MY", "SunMSCAPI");
         keyStore.load(null);
@@ -78,9 +77,10 @@ public class BTCertProvider {
 //System.getProperty("user.dir")
 
     public static String signSinglePdfDocument(SignRequestModel signRequest) throws CertificateException, NoSuchAlgorithmException, IOException, NoSuchProviderException, KeyStoreException, UnrecoverableKeyException {
-        Path filepath = Paths.get(rootPath + "/" + signRequest.getFileName());
+        Path filepath = Paths.get(Constant.ROOT_UPLOAD_PATH + "/" + signRequest.getFileName());
         OutputStream os = Files.newOutputStream(filepath);
-        os.write(signRequest.getInputFile().getBytes());
+        byte[] decodedBytes = Base64.getDecoder().decode(signRequest.getInputFile());
+        os.write(decodedBytes);
         os.close();
 
         KeyStore keyStore = KeyStore.getInstance("Windows-MY", "SunMSCAPI");
@@ -93,27 +93,28 @@ public class BTCertProvider {
         CreateSignature signing = new CreateSignature(keyStore, signRequest.getSelectedCertAlias());
         // sign PDF
         signing.setExternalSigning(externalSig);
-        File inFile = new File(rootPath, signRequest.getFileName());
+        File inFile = new File(Constant.ROOT_UPLOAD_PATH, signRequest.getFileName());
         String fileName = inFile.getName();
         String substring = fileName.substring(0, fileName.lastIndexOf('.'));
         File outFile = new File(inFile.getParent(), substring + "_signed.pdf");
         signing.signDetached(inFile, outFile, tsaUrl, signRequest.getName(), signRequest.getLocation(), signRequest.getReason());
 
-        return rootPath + substring + "_signed.pdf";
+        return Constant.ROOT_UPLOAD_PATH + "/" + substring + "_signed.pdf";
     }
 
     public static String sendSignedFileToServer(String pathToSignedFile, String serverUrl) throws IOException {
-        CloseableHttpClient client = HttpClients.createDefault();
         HttpPost post = new HttpPost(serverUrl);
         File fileNeedToSend = new File(pathToSignedFile);
-        FileBody fileBody = new FileBody(fileNeedToSend, ContentType.DEFAULT_BINARY);
-        MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-        builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
-        builder.addPart("uploadFile", fileBody);
 
-        HttpEntity entity = builder.build();
+        HttpEntity entity = MultipartEntityBuilder.create()
+                .addPart("uploadFile", new FileBody(fileNeedToSend))
+                .build();
+
         post.setEntity(entity);
+
+        HttpClient client = HttpClientBuilder.create().build();
         HttpResponse response = client.execute(post);
+
         return response.toString();
     }
 }
