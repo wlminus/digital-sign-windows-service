@@ -1,1 +1,1 @@
-WinSW.NET4.exe install
+runas /user:Administrator WinSW.NET4.exe install
