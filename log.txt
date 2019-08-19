@@ -30,3 +30,4 @@
 09/08/2019 15:37:29Sign done, path to fileD:\wlminus\Stuff\btsign/sign/dump_signed.pdf
 09/08/2019 15:37:29Start send server url http://localhost:8896/upload
 09/08/2019 15:37:29Send server done
+15/08/2019 14:44:53Start request sign ofCÔNG TY TNHH GI?I PHÁP CÔNG NGH? B&T VI?T NAM

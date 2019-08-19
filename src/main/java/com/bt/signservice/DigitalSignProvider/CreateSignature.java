@@ -90,10 +90,13 @@ public class CreateSignature extends CreateSignatureBase
         setTsaUrl(tsaUrl);
 
         // sign
-        try (FileOutputStream fos = new FileOutputStream(outFile);
-             PDDocument doc = PDDocument.load(inFile))
+        try
         {
+            FileOutputStream fos = new FileOutputStream(outFile);
+            PDDocument doc = PDDocument.load(inFile);
             signDetached(doc, fos, name, location, reason);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

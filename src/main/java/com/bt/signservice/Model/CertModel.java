@@ -8,7 +8,7 @@ public class CertModel {
     private boolean valid;
     private String alias;
     private X500Principal issuer;
-    private X500Principal subject;
+    private String subject;
     private String algName;
     private String algOID;
     private int version;
@@ -46,11 +46,11 @@ public class CertModel {
         this.issuer = issuer;
     }
 
-    public X500Principal getSubject() {
+    public String getSubject() {
         return subject;
     }
 
-    public void setSubject(X500Principal subject) {
+    public void setSubject(String subject) {
         this.subject = subject;
     }
 
@@ -89,7 +89,7 @@ public class CertModel {
     public CertModel() {
     }
 
-    public CertModel(long id, boolean valid, String alias, X500Principal issuer, X500Principal subject, String algName, String algOID, int version, Date notAfter) {
+    public CertModel(long id, boolean valid, String alias, X500Principal issuer, String subject, String algName, String algOID, int version, Date notAfter) {
         this.id = id;
         this.valid = valid;
         this.alias = alias;

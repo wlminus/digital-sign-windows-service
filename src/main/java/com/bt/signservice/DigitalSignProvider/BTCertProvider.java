@@ -3,20 +3,18 @@ package com.bt.signservice.DigitalSignProvider;
 import com.bt.signservice.Model.CertModel;
 import com.bt.signservice.Model.Constant;
 import com.bt.signservice.Model.SignRequestModel;
-import com.bt.signservice.Model.SignResponseModel;
+//import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.FileEntity;
-import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.FileBody;
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.HttpClients;
-import org.bouncycastle.asn1.cmp.CertResponse;
+import org.json.JSONObject;
+import sun.security.x509.X500Name;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,7 +23,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.*;
-import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.*;
@@ -39,12 +36,15 @@ public class BTCertProvider {
         for (String als: Collections.list(keyStore.aliases())) {
             X509Certificate cert = (X509Certificate)keyStore.getCertificate(als);
             boolean isValid = (new Date()).compareTo(cert.getNotAfter()) <= 0;
+            X500Name x500name = new X500Name(cert.getSubjectX500Principal().getName());
+            String cn = x500name.getCommonName();
+
             CertModel tmp = new CertModel(
                 index,
                 isValid,
                 als,
                 cert.getIssuerX500Principal(),
-                cert.getSubjectX500Principal(),
+                    cn,
                 cert.getSigAlgName(),
                 cert.getSigAlgOID(),
                 cert.getVersion(),
@@ -102,6 +102,33 @@ public class BTCertProvider {
         return Constant.ROOT_UPLOAD_PATH + "/" + substring + "_signed.pdf";
     }
 
+    public static String signSinglePdfByDataFromServer(JSONObject data, String selectedCertAlias, String name, String location, String reason) throws IOException, NoSuchProviderException, KeyStoreException, CertificateException, NoSuchAlgorithmException, UnrecoverableKeyException {
+        Path filepath = Paths.get(Constant.ROOT_UPLOAD_PATH + "/" + data.getString("realfilename"));
+        OutputStream os = Files.newOutputStream(filepath);
+        byte[] decodedBytes = Base64.getDecoder().decode(data.getString("data"));
+
+        os.write(decodedBytes);
+        os.close();
+
+        KeyStore keyStore = KeyStore.getInstance("Windows-MY", "SunMSCAPI");
+        keyStore.load(null);
+
+        boolean externalSig = false;
+        String tsaUrl = null;
+
+        /// Need edit
+        CreateSignature signing = new CreateSignature(keyStore, selectedCertAlias);
+        // sign PDF
+        signing.setExternalSigning(externalSig);
+        File inFile = new File(Constant.ROOT_UPLOAD_PATH, data.getString("realfilename"));
+        String fileName = inFile.getName();
+        String substring = fileName.substring(0, fileName.lastIndexOf('.'));
+        File outFile = new File(inFile.getParent(), substring + "_signed.pdf");
+        signing.signDetached(inFile, outFile, tsaUrl, name, location, reason);
+
+        return Constant.ROOT_UPLOAD_PATH + "/" + substring + "_signed.pdf";
+    }
+
     public static String sendSignedFileToServer(String pathToSignedFile, String serverUrl) throws IOException {
         HttpPost post = new HttpPost(serverUrl);
         File fileNeedToSend = new File(pathToSignedFile);
@@ -117,4 +144,35 @@ public class BTCertProvider {
 
         return response.toString();
     }
+
+//    public static String sendToBTServer(String pathToSignedFile, String serverUrl) throws IOException {
+//        HttpPost post = new HttpPost(serverUrl);
+//        File fileNeedToSend = new File(pathToSignedFile);
+//        String encoded = Base64.getEncoder().encodeToString(FileUtils.readFileToByteArray(fileNeedToSend));
+//
+//        HttpEntity entity = MultipartEntityBuilder.create()
+//                .addTextBody("tdphieuid", String.valueOf(fileNeedToSend))
+//                .addTextBody("filename", new FileBody(fileNeedToSend))
+//                .addTextBody("data", new String)
+//                .addTextBody("ngaytao", new FileBody(fileNeedToSend))
+//                .addTextBody("nguoitao", new FileBody(fileNeedToSend))
+//                .addTextBody("ngaysua", new FileBody(fileNeedToSend))
+//                .addTextBody("nguoisua", new FileBody(fileNeedToSend))
+//                .addTextBody("loaiphieu", new FileBody(fileNeedToSend))
+//                .addTextBody("stt", new FileBody(fileNeedToSend))
+//                .addTextBody("filepath", new FileBody(fileNeedToSend))
+//                .addTextBody("mieuta", new FileBody(fileNeedToSend))
+//                .addTextBody("realfilename", new FileBody(fileNeedToSend))
+//                .addTextBody("banchinh", new FileBody(fileNeedToSend))
+//                .addTextBody("masothue", new FileBody(fileNeedToSend))
+//                .addTextBody("isSigned", new FileBody(fileNeedToSend))
+//                .build();
+//
+//        post.setEntity(entity);
+//
+//        HttpClient client = HttpClientBuilder.create().build();
+//        HttpResponse response = client.execute(post);
+//
+//        return response.toString();
+//    }
 }
