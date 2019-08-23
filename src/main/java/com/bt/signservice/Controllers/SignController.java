@@ -2,17 +2,18 @@ package com.bt.signservice.Controllers;
 
 import com.bt.signservice.Controllers.errors.BadRequestAlertException;
 import com.bt.signservice.DigitalSignProvider.BTCertProvider;
-import com.bt.signservice.Model.*;
+import com.bt.signservice.Model.AttachmentModel;
+import com.bt.signservice.Model.CertModel;
+import com.bt.signservice.Model.SignRequestModel;
 import com.bt.signservice.service.LogService;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.json.JSONArray;
@@ -71,7 +72,7 @@ public class SignController {
 
     /**
      * Request for signing pdf document
-     * @param signRequest {
+     * param SignRequestModel {
      *     CertModel selectedCert: select cert of user
      *     String selectedCertAlias: alias of that cert
      *     MultipartFile inputFile: input file to sign send by client
@@ -87,122 +88,166 @@ public class SignController {
      * }
      * @return SignResponseModel
      */
+//    @CrossOrigin(origins = "*", allowedHeaders = "*")
+////    @RequestMapping(value = "/sign", method = RequestMethod.POST)
+////    public ResponseEntity<String> signRequest(@RequestBody SignRequestModel signRequest) {
+////        try {
+////            LogService ls = new LogService();
+////            SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+////            Date date = new Date();
+////
+////            ls.WriteLogToFile(formatter.format(date) + "Start request sign of" + signRequest.getSelectedCertAlias() + "\n");
+////            String pathToSignedFile = BTCertProvider.signSinglePdfDocument(signRequest);
+////
+////            ls.WriteLogToFile(formatter.format(date) + "Sign done, path to file" + pathToSignedFile + "\n");
+////            if (signRequest.isUpload()) {
+////                ls.WriteLogToFile(formatter.format(date) + "Start send server url " + signRequest.getServerUploadEndpoint() + "\n");
+////                String response = BTCertProvider.sendSignedFileToServer(pathToSignedFile, signRequest.getServerUploadEndpoint());
+////
+////                ls.WriteLogToFile(formatter.format(date) + "Send server done"+ "\n");
+////                return ResponseEntity.ok(response);
+////            } else {
+////                return ResponseEntity.ok("Đã kí vào file");
+////            }
+////
+////        } catch (CertificateException certExc) {
+////            throw new BadRequestAlertException("Lỗi Certificate", certExc.getMessage(), "");
+////        } catch (NoSuchAlgorithmException noAlgExc) {
+////            throw new BadRequestAlertException("Lỗi không có thuật toán", noAlgExc.getMessage(), "");
+////        } catch (IOException ioExc) {
+////            throw new BadRequestAlertException("Lỗi vào ra", ioExc.getMessage(), "");
+////        } catch (KeyStoreException keyStoreExc) {
+////            throw new BadRequestAlertException("Không tải được keystore", keyStoreExc.getMessage(), "");
+////        } catch (NoSuchProviderException noProviderExc) {
+////            throw new BadRequestAlertException("Lỗi không có keystore", noProviderExc.getMessage(), "");
+////        } catch (Exception ex) {
+////            throw new BadRequestAlertException("Lỗi không xác định", ex.getMessage(), "");
+////        }
+////    }
+
     @CrossOrigin(origins = "*", allowedHeaders = "*")
-    @RequestMapping(value = "/sign", method = RequestMethod.POST)
-    public ResponseEntity<String> signRequest(@RequestBody SignRequestModel signRequest) {
+    @RequestMapping(value = "/btsign", method = RequestMethod.POST)
+    public String btsign(@RequestBody String stringRequest) {
         try {
-            LogService ls = new LogService();
-            SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-            Date date = new Date();
+            JSONObject obj = new JSONObject(stringRequest);
+            String location = obj.getString("location");
+            String name = obj.getString("name");
+            String reason = obj.getString("reason");
 
-            ls.WriteLogToFile(formatter.format(date) + "Start request sign of" + signRequest.getSelectedCertAlias() + "\n");
-            String pathToSignedFile = BTCertProvider.signSinglePdfDocument(signRequest);
+            String selectedCertAlias = obj.getString("selectedCertAlias");
+            String serverUploadEndpoint = obj.getString("serverUploadEndpoint");
+            String token = obj.getString("token");
 
-            ls.WriteLogToFile(formatter.format(date) + "Sign done, path to file" + pathToSignedFile + "\n");
-            if (signRequest.isUpload()) {
-                ls.WriteLogToFile(formatter.format(date) + "Start send server url " + signRequest.getServerUploadEndpoint() + "\n");
-                String response = BTCertProvider.sendSignedFileToServer(pathToSignedFile, signRequest.getServerUploadEndpoint());
+            String dataAttachment = obj.getString("dataAttachment").replace("\\\"", "\"");
+            JSONArray obj2 = new JSONArray(dataAttachment);
 
-                ls.WriteLogToFile(formatter.format(date) + "Send server done"+ "\n");
-                return ResponseEntity.ok(response);
-            } else {
-                return ResponseEntity.ok("Đã kí vào file");
+            for(int n = 0; n < obj2.length(); n++)
+            {
+                JSONObject attachmentItem = obj2.getJSONObject(n);
+                String pathToNewFile = BTCertProvider.signSinglePdfByDataFromServer(attachmentItem, selectedCertAlias, name, location, reason);
+
+                HttpPost post = new HttpPost(serverUploadEndpoint);
+                post.setHeader(HttpHeaders.AUTHORIZATION, token);
+                post.setHeader(HttpHeaders.CONTENT_TYPE, "application/json;charset=UTF-8");
+
+                File fileNeedToSend = new File(pathToNewFile);
+                String encoded = Base64.getEncoder().encodeToString(FileUtils.readFileToByteArray(fileNeedToSend));
+                String newFileName = attachmentItem.getString("filename").substring(0, attachmentItem.getString("filename").lastIndexOf('.')) + "_signed.pdf";
+                String newRealFileName = attachmentItem.getString("realfilename").substring(0, attachmentItem.getString("realfilename").lastIndexOf('.')) + "_signed.pdf";
+
+                attachmentItem.remove("filename");
+                attachmentItem.remove("data");
+                attachmentItem.remove("realfilename");
+                attachmentItem.remove("isSigned");
+
+                attachmentItem.put("filename", newFileName);
+                attachmentItem.put("data", encoded);
+                attachmentItem.put("realfilename", newRealFileName);
+                attachmentItem.put("isSigned", "true");
+
+                StringEntity params = new StringEntity(attachmentItem.toString(), "UTF-8");
+                params.setContentType("application/json");
+                post.setEntity(params);
+
+                HttpClient client = HttpClientBuilder.create().build();
+                HttpResponse response = client.execute(post);
             }
-
+            return "Upload file thành công";
+        } catch (NoSuchAlgorithmException noSuchAlgExc) {
+            throw new BadRequestAlertException("Không có thuật toán mã hóa", noSuchAlgExc.getMessage(), "");
         } catch (CertificateException certExc) {
-            throw new BadRequestAlertException("Lỗi Certificate", certExc.getMessage(), "");
-        } catch (NoSuchAlgorithmException noAlgExc) {
-            throw new BadRequestAlertException("Lỗi không có thuật toán", noAlgExc.getMessage(), "");
-        } catch (IOException ioExc) {
-            throw new BadRequestAlertException("Lỗi vào ra", ioExc.getMessage(), "");
+            throw new BadRequestAlertException("Lỗi hệ thống Certificate", certExc.getMessage(), "");
         } catch (KeyStoreException keyStoreExc) {
-            throw new BadRequestAlertException("Không tải được keystore", keyStoreExc.getMessage(), "");
-        } catch (NoSuchProviderException noProviderExc) {
-            throw new BadRequestAlertException("Lỗi không có keystore", noProviderExc.getMessage(), "");
-        } catch (Exception ex) {
-            throw new BadRequestAlertException("Lỗi không xác định", ex.getMessage(), "");
+            throw new BadRequestAlertException("Lỗi hệ thống KeyStore", keyStoreExc.getMessage(), "");
+        } catch (UnrecoverableKeyException urEx) {
+            throw new BadRequestAlertException("Lỗi key: ", urEx.getMessage(), "");
+        } catch (IOException ioEx) {
+            throw new BadRequestAlertException("Lỗi vào ra: ", ioEx.getMessage(), "");
+        } catch (NoSuchProviderException noSuchProviderExc) {
+            throw new BadRequestAlertException("Không tìm thấy token: ", noSuchProviderExc.getMessage(), "");
         }
     }
 
     @CrossOrigin(origins = "*", allowedHeaders = "*")
-    @RequestMapping(value = "/btsign", method = RequestMethod.POST)
-    public String btsing(@RequestBody String stringRequest) {
-        JSONObject obj = new JSONObject(stringRequest);
-        String location = obj.getString("location");
-        String name = obj.getString("name");
-        String reason = obj.getString("reason");
+    @RequestMapping(value = "/boss-sign", method = RequestMethod.POST)
+    public String bossSign(@RequestBody String stringRequest) {
+        try {
+            String requestStrip = stringRequest.replace("\\\"", "\"");
+            JSONObject dataJson = new JSONObject(requestStrip);
 
-        String selectedCertAlias = obj.getString("selectedCertAlias");
-        String serverUploadEndpoint = obj.getString("serverUploadEndpoint");
-        String token = obj.getString("token");
+            String location = dataJson.getString("location");
+            String name = dataJson.getString("name");
+            String reason = dataJson.getString("reason");
 
-        String dataAttachment = obj.getString("dataAttachment").replace("\\\"", "\"");
-        JSONArray obj2 = new JSONArray(dataAttachment);
+            String selectedCertAlias = dataJson.getString("selectedCertAlias");
+            String serverUploadEndpoint = dataJson.getString("serverUploadEndpoint");
+            String token = dataJson.getString("token");
 
-        List<AttachmentModel> dataSendToServer = new ArrayList<>();
-        for(int n = 0; n < obj2.length(); n++)
-        {
-            JSONObject attachmentItem = obj2.getJSONObject(n);
+            String tableName = dataJson.getString("tableName");
 
-            try {
-                String pathToNewFile = BTCertProvider.signSinglePdfByDataFromServer(attachmentItem, selectedCertAlias, name, location, reason);
+            String pathToNewFile = BTCertProvider.signSinglePdfByDataFromServer(dataJson, selectedCertAlias, name, location, reason);
 
-                // Send file to server
-                HttpPost post = new HttpPost(serverUploadEndpoint);
-                File fileNeedToSend = new File(pathToNewFile);
-                String encoded = Base64.getEncoder().encodeToString(FileUtils.readFileToByteArray(fileNeedToSend));
+//            HttpPost post = new HttpPost(serverUploadEndpoint);
+//            post.setHeader(HttpHeaders.AUTHORIZATION, token);
+//            post.setHeader(HttpHeaders.CONTENT_TYPE, "application/json;charset=UTF-8");
+//
+//            File fileNeedToSend = new File(pathToNewFile);
+//            String encoded = Base64.getEncoder().encodeToString(FileUtils.readFileToByteArray(fileNeedToSend));
+//            String newFileName = dataJson.getString("fileName").substring(0, dataJson.getString("fileName").lastIndexOf('.')) + "_signed.pdf";
+//            String newRealFileName = dataJson.getString("realfilename").substring(0, dataJson.getString("realfilename").lastIndexOf('.')) + "_signed.pdf";
 
-                String newFileName = attachmentItem.getString("filename").substring(0, attachmentItem.getString("filename").lastIndexOf('.')) + "_signed.pdf";
 
-                HttpEntity entity = MultipartEntityBuilder.create()
-                        .addTextBody("tdphieuid", attachmentItem.getString("tdphieuid"))
-                        .addTextBody("filename", newFileName)
-                        .addTextBody("data", encoded)
-                        .addTextBody("ngaytao", attachmentItem.getString("ngaytao"))
-                        .addTextBody("nguoitao", attachmentItem.getString("nguoitao"))
-                        .addTextBody("ngaysua", attachmentItem.getString("ngaysua"))
-                        .addTextBody("nguoisua", attachmentItem.getString("nguoisua"))
-                        .addTextBody("loaiphieu", attachmentItem.getString("loaiphieu"))
-                        .addTextBody("stt", attachmentItem.getString("stt"))
-                        .addTextBody("filepath", attachmentItem.getString("filepath"))
-                        .addTextBody("mieuta", attachmentItem.getString("mieuta"))
-                        .addTextBody("realfilename", newFileName)
-                        .addTextBody("banchinh", attachmentItem.getString("banchinh"))
-                        .addTextBody("masothue", attachmentItem.getString("masothue"))
-                        .addTextBody("isSigned", "true")
-                        .build();
+//            dataJson.remove("fileName");
+//            dataJson.remove("data");
+//            dataJson.remove("isSigned");
+//
+//            dataJson.put("fileName", newFileName);
+//            dataJson.put("data", encoded);
+//            dataJson.put("isSigned", "true");
 
-                post.setEntity(entity);
+//            StringEntity params = new StringEntity(dataJson.toString(), "UTF-8");
+//            params.setContentType("application/json");
+//            post.setEntity(params);
 
-                HttpClient client = HttpClientBuilder.create().build();
-                HttpResponse response = client.execute(post);
 
-                return response.toString();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (CertificateException e) {
-                e.printStackTrace();
-            } catch (NoSuchAlgorithmException e) {
-                e.printStackTrace();
-            } catch (UnrecoverableKeyException e) {
-                e.printStackTrace();
-            } catch (NoSuchProviderException e) {
-                e.printStackTrace();
-            } catch (KeyStoreException e) {
-                e.printStackTrace();
-            }
+
+//            HttpClient client = HttpClientBuilder.create().build();
+//            HttpResponse response = client.execute(post);
+//
+            return "Upload file thành công";
+        } catch (NoSuchAlgorithmException noSuchAlgExc) {
+            throw new BadRequestAlertException("Không có thuật toán mã hóa", noSuchAlgExc.getMessage(), "");
+        } catch (CertificateException certExc) {
+            throw new BadRequestAlertException("Lỗi hệ thống Certificate", certExc.getMessage(), "");
+        } catch (KeyStoreException keyStoreExc) {
+            throw new BadRequestAlertException("Lỗi hệ thống KeyStore", keyStoreExc.getMessage(), "");
+        } catch (UnrecoverableKeyException urEx) {
+            throw new BadRequestAlertException("Lỗi key: ", urEx.getMessage(), "");
+        } catch (IOException ioEx) {
+            throw new BadRequestAlertException("Lỗi vào ra: ", ioEx.getMessage(), "");
+        } catch (NoSuchProviderException noSuchProviderExc) {
+            throw new BadRequestAlertException("Không tìm thấy token: ", noSuchProviderExc.getMessage(), "");
         }
-
-//        System.out.println(test);
-//        JSONArray obj2 = new JSONArray(test);
-//        System.out.println(obj2);
-//        for(int n = 0; n < obj2.length(); n++)
-//        {
-//            JSONObject object = obj2.getJSONObject(n);
-//            System.out.println(object.getString("filename"));
-//        }
-
-        return "Done";
     }
 
 //    @RequestMapping(value = "/test", method = RequestMethod.GET)

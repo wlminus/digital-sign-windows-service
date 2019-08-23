@@ -103,7 +103,7 @@ public class BTCertProvider {
     }
 
     public static String signSinglePdfByDataFromServer(JSONObject data, String selectedCertAlias, String name, String location, String reason) throws IOException, NoSuchProviderException, KeyStoreException, CertificateException, NoSuchAlgorithmException, UnrecoverableKeyException {
-        Path filepath = Paths.get(Constant.ROOT_UPLOAD_PATH + "/" + data.getString("realfilename"));
+        Path filepath = Paths.get(Constant.ROOT_UPLOAD_PATH + "/" + data.getString("fileName"));
         OutputStream os = Files.newOutputStream(filepath);
         byte[] decodedBytes = Base64.getDecoder().decode(data.getString("data"));
 
@@ -120,7 +120,7 @@ public class BTCertProvider {
         CreateSignature signing = new CreateSignature(keyStore, selectedCertAlias);
         // sign PDF
         signing.setExternalSigning(externalSig);
-        File inFile = new File(Constant.ROOT_UPLOAD_PATH, data.getString("realfilename"));
+        File inFile = new File(Constant.ROOT_UPLOAD_PATH, data.getString("fileName"));
         String fileName = inFile.getName();
         String substring = fileName.substring(0, fileName.lastIndexOf('.'));
         File outFile = new File(inFile.getParent(), substring + "_signed.pdf");
