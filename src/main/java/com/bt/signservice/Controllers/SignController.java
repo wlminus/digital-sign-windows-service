@@ -131,15 +131,16 @@ public class SignController {
         try {
             JSONObject obj = new JSONObject(stringRequest);
             String location = obj.getString("location");
-            String name = obj.getString("name");
+            String name = obj.getString("selectedCertAlias");
             String reason = obj.getString("reason");
 
             String selectedCertAlias = obj.getString("selectedCertAlias");
             String serverUploadEndpoint = obj.getString("serverUploadEndpoint");
             String token = obj.getString("token");
 
-            String dataAttachment = obj.getString("dataAttachment").replace("\\\"", "\"");
-            JSONArray obj2 = new JSONArray(dataAttachment);
+//            String dataAttachment = obj.getString("dataAttachment").replace("\\\"", "\"");
+//            JSONArray obj2 = new JSONArray(dataAttachment);
+            JSONArray obj2 = obj.getJSONArray("dataAttachment");
 
             for(int n = 0; n < obj2.length(); n++)
             {
@@ -152,15 +153,18 @@ public class SignController {
 
                 File fileNeedToSend = new File(pathToNewFile);
                 String encoded = Base64.getEncoder().encodeToString(FileUtils.readFileToByteArray(fileNeedToSend));
-                String newFileName = attachmentItem.getString("filename").substring(0, attachmentItem.getString("filename").lastIndexOf('.')) + "_signed.pdf";
+
+                String oldName = attachmentItem.getString("fileName");
+
+                String newFileName = attachmentItem.getString("fileName").substring(0, attachmentItem.getString("fileName").lastIndexOf('.')) + "_signed.pdf";
                 String newRealFileName = attachmentItem.getString("realfilename").substring(0, attachmentItem.getString("realfilename").lastIndexOf('.')) + "_signed.pdf";
 
-                attachmentItem.remove("filename");
+                attachmentItem.remove("fileName");
                 attachmentItem.remove("data");
                 attachmentItem.remove("realfilename");
                 attachmentItem.remove("isSigned");
 
-                attachmentItem.put("filename", newFileName);
+                attachmentItem.put("fileName", newFileName);
                 attachmentItem.put("data", encoded);
                 attachmentItem.put("realfilename", newRealFileName);
                 attachmentItem.put("isSigned", "true");
@@ -192,48 +196,47 @@ public class SignController {
     @RequestMapping(value = "/boss-sign", method = RequestMethod.POST)
     public String bossSign(@RequestBody String stringRequest) {
         try {
-            String requestStrip = stringRequest.replace("\\\"", "\"");
-            JSONObject dataJson = new JSONObject(requestStrip);
+            JSONObject obj = new JSONObject(stringRequest);
+            String location = obj.getString("location");
+            String name = obj.getString("selectedCertAlias");
+            String reason = obj.getString("reason");
 
-            String location = dataJson.getString("location");
-            String name = dataJson.getString("name");
-            String reason = dataJson.getString("reason");
+//            String tableName = obj.getString("tableName");
+//            String columnName = obj.getString("columnName");
 
-            String selectedCertAlias = dataJson.getString("selectedCertAlias");
-            String serverUploadEndpoint = dataJson.getString("serverUploadEndpoint");
-            String token = dataJson.getString("token");
+            String selectedCertAlias = obj.getString("selectedCertAlias");
+            String serverUploadEndpoint = obj.getString("serverUploadEndpoint");
+            String token = obj.getString("token");
 
-            String tableName = dataJson.getString("tableName");
+            String fileName = obj.getString("fileName");
+            String data = obj.getString("data");
 
-            String pathToNewFile = BTCertProvider.signSinglePdfByDataFromServer(dataJson, selectedCertAlias, name, location, reason);
+            String pathToNewFile = BTCertProvider.signSingleBOSSPdfByDataFromServer(fileName, data, selectedCertAlias, name, location, reason);
 
-//            HttpPost post = new HttpPost(serverUploadEndpoint);
-//            post.setHeader(HttpHeaders.AUTHORIZATION, token);
-//            post.setHeader(HttpHeaders.CONTENT_TYPE, "application/json;charset=UTF-8");
-//
-//            File fileNeedToSend = new File(pathToNewFile);
-//            String encoded = Base64.getEncoder().encodeToString(FileUtils.readFileToByteArray(fileNeedToSend));
-//            String newFileName = dataJson.getString("fileName").substring(0, dataJson.getString("fileName").lastIndexOf('.')) + "_signed.pdf";
-//            String newRealFileName = dataJson.getString("realfilename").substring(0, dataJson.getString("realfilename").lastIndexOf('.')) + "_signed.pdf";
+            HttpPost post = new HttpPost(serverUploadEndpoint);
+            post.setHeader(HttpHeaders.AUTHORIZATION, token);
+            post.setHeader(HttpHeaders.CONTENT_TYPE, "application/json;charset=UTF-8");
 
+            File fileNeedToSend = new File(pathToNewFile);
+            String encoded = Base64.getEncoder().encodeToString(FileUtils.readFileToByteArray(fileNeedToSend));
 
-//            dataJson.remove("fileName");
-//            dataJson.remove("data");
-//            dataJson.remove("isSigned");
-//
-//            dataJson.put("fileName", newFileName);
-//            dataJson.put("data", encoded);
-//            dataJson.put("isSigned", "true");
+            String newFileName = fileName.substring(0, fileName.lastIndexOf('.')) + "_signed.pdf";
 
-//            StringEntity params = new StringEntity(dataJson.toString(), "UTF-8");
-//            params.setContentType("application/json");
-//            post.setEntity(params);
+            obj.remove("fileName");
+            obj.remove("data");
+            obj.remove("isSigned");
 
+            obj.put("fileName", newFileName);
+            obj.put("data", encoded);
+            obj.put("isSigned", "true");
 
+            StringEntity params = new StringEntity(obj.toString(), "UTF-8");
+            params.setContentType("application/json");
+            post.setEntity(params);
 
-//            HttpClient client = HttpClientBuilder.create().build();
-//            HttpResponse response = client.execute(post);
-//
+            HttpClient client = HttpClientBuilder.create().build();
+            HttpResponse response = client.execute(post);
+
             return "Upload file thành công";
         } catch (NoSuchAlgorithmException noSuchAlgExc) {
             throw new BadRequestAlertException("Không có thuật toán mã hóa", noSuchAlgExc.getMessage(), "");

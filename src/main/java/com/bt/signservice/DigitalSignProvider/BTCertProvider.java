@@ -145,6 +145,32 @@ public class BTCertProvider {
         return response.toString();
     }
 
+    public static String signSingleBOSSPdfByDataFromServer(String fileName, String data, String selectedCertAlias, String name, String location, String reason) throws IOException, NoSuchProviderException, KeyStoreException, CertificateException, NoSuchAlgorithmException, UnrecoverableKeyException {
+        Path filepath = Paths.get(Constant.ROOT_UPLOAD_PATH + "/" + fileName);
+        OutputStream os = Files.newOutputStream(filepath);
+        byte[] decodedBytes = Base64.getDecoder().decode(data);
+
+        os.write(decodedBytes);
+        os.close();
+
+        KeyStore keyStore = KeyStore.getInstance("Windows-MY", "SunMSCAPI");
+        keyStore.load(null);
+
+        boolean externalSig = false;
+        String tsaUrl = null;
+
+        /// Need edit
+        CreateSignature signing = new CreateSignature(keyStore, selectedCertAlias);
+        // sign PDF
+        signing.setExternalSigning(externalSig);
+        File inFile = new File(Constant.ROOT_UPLOAD_PATH, fileName);
+//        String fileName = inFile.getName();
+        String substring = fileName.substring(0, fileName.lastIndexOf('.'));
+        File outFile = new File(inFile.getParent(), substring + "_signed.pdf");
+        signing.signDetached(inFile, outFile, tsaUrl, name, location, reason);
+
+        return Constant.ROOT_UPLOAD_PATH + "/" + substring + "_signed.pdf";
+    }
 //    public static String sendToBTServer(String pathToSignedFile, String serverUrl) throws IOException {
 //        HttpPost post = new HttpPost(serverUrl);
 //        File fileNeedToSend = new File(pathToSignedFile);
